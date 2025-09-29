@@ -1,0 +1,248 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  color: #333;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Auth Styles */
+.auth-form {
+  background: white;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  margin-top: 100px;
+  text-align: center;
+}
+
+.auth-form h2 {
+  margin-bottom: 30px;
+  color: #667eea;
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 15px;
+  margin: 10px 0;
+  border: 2px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.auth-form input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.auth-form button {
+  width: 100%;
+  padding: 15px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.auth-form button:hover {
+  background: #5a6fd8;
+}
+
+.auth-switch {
+  margin-top: 20px;
+  color: #666;
+}
+
+.auth-switch a {
+  color: #667eea;
+  text-decoration: none;
+}
+
+/* Header Styles */
+.header {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.header h1 {
+  color: #667eea;
+}
+
+.nav-btn {
+  padding: 10px 20px;
+  margin: 0 5px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background: #f0f0f0;
+  color: #333;
+}
+
+.nav-btn.active {
+  background: #667eea;
+  color: white;
+}
+
+.nav-btn:hover {
+  background: #667eea;
+  color: white;
+}
+
+/* Post Form Styles */
+.post-form {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.post-form textarea {
+  width: 100%;
+  padding: 15px;
+  border: 2px solid #ddd;
+  border-radius: 5px;
+  resize: vertical;
+  min-height: 100px;
+  font-family: inherit;
+}
+
+.post-form textarea:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.post-form button {
+  margin-top: 10px;
+  padding: 10px 30px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  float: right;
+}
+
+.post-form button:hover {
+  background: #5a6fd8;
+}
+
+/* Posts Styles */
+.posts-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.post {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.post-author {
+  font-weight: bold;
+  color: #667eea;
+}
+
+.post-time {
+  color: #666;
+  font-size: 14px;
+}
+
+.post-content {
+  margin-bottom: 15px;
+  line-height: 1.6;
+}
+
+.post-actions {
+  display: flex;
+  gap: 15px;
+}
+
+.post-actions button {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background: #f0f0f0;
+  color: #333;
+}
+
+.post-actions button:hover {
+  background: #667eea;
+  color: white;
+}
+
+.post-actions button.liked {
+  background: #e74c3c;
+  color: white;
+}
+
+/* Profile Styles */
+.profile-header {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.profile-info h2 {
+  color: #667eea;
+  margin-bottom: 10px;
+}
+
+.profile-info p {
+  color: #666;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+
+  .header {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .auth-form {
+    margin-top: 50px;
+    padding: 30px 20px;
+  }
+}

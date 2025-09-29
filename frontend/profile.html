@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Social Media - Register</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Mini Social</h1>
+            <nav class="nav">
+                <a href="index.html" class="nav-btn">Home</a>
+                <a href="index.html" class="nav-btn">Login</a>
+            </nav>
+        </header>
+
+        <div class="auth-container">
+            <div class="post-form">
+                <h2>Join Mini Social</h2>
+                <p style="text-align: center; margin-bottom: 1.5rem; color: #666;">Create your account to start sharing</p>
+                
+                <form id="register-form">
+                    <div class="form-group">
+                        <input type="text" id="reg-username" placeholder="Choose a username" required>
+                    </div>
+                    <!-- Added email field to match User schema -->
+                    <div class="form-group">
+                        <input type="email" id="reg-email" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="reg-password" placeholder="Create a password" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="confirm-password" placeholder="Confirm your password" required>
+                    </div>
+                    <!-- Added bio field (optional) -->
+                    <div class="form-group">
+                        <textarea id="reg-bio" placeholder="Tell us about yourself (optional)" rows="3"></textarea>
+                    </div>
+                    <!-- Added profile picture URL field (optional) -->
+                    <div class="form-group">
+                        <input type="url" id="reg-profilepic" placeholder="Profile picture URL (optional)">
+                    </div>
+                    <button type="submit" class="submit-btn">Create Account</button>
+                </form>
+                
+                <div id="register-message" class="message hidden"></div>
+                
+                <p style="text-align: center; margin-top: 1.5rem;">
+                    Already have an account? <a href="index.html" style="color: #667eea; text-decoration: none;">Login here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/register.js"></script>
+</body>
+</html>

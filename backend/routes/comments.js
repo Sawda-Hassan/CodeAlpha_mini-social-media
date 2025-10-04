@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
-const Comment = require("../models/Comment");
+const Comment = require("../models/comment");
 const Post = require("../models/post");
 
 // ------------------------------

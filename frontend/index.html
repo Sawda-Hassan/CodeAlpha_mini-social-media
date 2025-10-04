@@ -3,54 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini Social Media</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Login - Social App</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-   
-
-        <!-- Main App Container -->
-        <div id="main-container" class="container hidden">
-            <!-- Header -->
-            <header class="header">
-                <h1>Mini Social</h1>
-                <nav>
-                    <button id="home-btn" class="nav-btn active">Home</button>
-                    <button id="profile-btn" class="nav-btn">Profile</button>
-                    <button id="logout-btn" class="nav-btn">Logout</button>
-                </nav>
-            </header>
-
-            <!-- Home Feed -->
-            <div id="home-view" class="view">
-                <div class="post-form">
-                    <textarea id="post-content" placeholder="What's on your mind?"></textarea>
-                    <button id="create-post-btn">Post</button>
-                </div>
-                <div id="posts-container" class="posts-container">
-                    <!-- Posts will be dynamically loaded here -->
-                </div>
+    <div class="container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>Welcome Back</h1>
+                <p>Login to your account</p>
             </div>
-
-            <!-- Profile View -->
-            <div id="profile-view" class="view hidden">
-                <div class="profile-header">
-                    <div class="profile-info">
-                        <h2 id="profile-username">Username</h2>
-                        <p id="profile-posts-count">0 posts</p>
-                    </div>
+            
+            <form id="loginForm" class="auth-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required placeholder="Enter your email">
                 </div>
-                <div id="user-posts-container" class="posts-container">
-                    <!-- User's posts will be loaded here -->
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required placeholder="Enter your password">
                 </div>
+                
+                <div id="loginError" class="error-message"></div>
+                
+                <button type="submit" class="btn btn-primary">Login</button>
+            </form>
+            
+            <div class="auth-footer">
+                <p>Don't have an account? <a href="register.html">Register here</a></p>
             </div>
         </div>
     </div>
-
-    <script src="auth.js"></script>
-    <script src="post.js"></script>
-    <script src="profile.js"></script>
-    <script src="app.js"></script>
-    <script src="index.js"></script>
+    
+    <script src="main.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            const result = await login(email, password);
+            if (result.success) {
+                window.location.href = 'posts.html';
+            } else {
+                document.getElementById('loginError').textContent = result.error;
+            }
+        });
+    </script>
 </body>
 </html>

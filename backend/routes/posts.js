@@ -1,66 +1,92 @@
-const express = require('express');
-const Post = require('../models/post');
-const Comment = require('../models/comment');
-const User = require('../models/users');
-
+const express = require("express");
 const router = express.Router();
+const jwt = require("jsonwebtoken");
+const Post = require("../models/post");
 
-// Create Post
-router.post('/', async (req, res) => {
-  const { author, content } = req.body;
+// ------------------------------
+// CREATE POST
+// ------------------------------
+router.post("/", async (req, res) => {
   try {
-    const post = await Post.create({ author, content });
-    res.json(post);
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ message: "No token provided" });
+
+    const token = authHeader.split(" ")[1];
+    const payload = jwt.verify(token, process.env.JWT_SECRET || "secret");
+
+    const { content } = req.body;
+    if (!content) return res.status(400).json({ message: "Content is required" });
+
+    const post = new Post({
+      content,
+      author: payload.id,
+    });
+
+    await post.save();
+    res.status(201).json(post);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(400).json({ message: err.message || "Error creating post" });
   }
 });
 
-// Get All Posts
-router.get('/', async (req, res) => {
+// ------------------------------
+// GET ALL POSTS
+// ------------------------------
+router.get("/", async (req, res) => {
   try {
-    const posts = await Post.find().populate('author', 'username').sort({ createdAt: -1 });
+    const posts = await Post.find()
+      .populate("author", "username displayName profilePic")
+      .sort({ createdAt: -1 });
+
     res.json(posts);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ message: err.message });
   }
 });
 
-// Like / Unlike Post
-router.post('/:id/like', async (req, res) => {
-  const { userId } = req.body;
+// ------------------------------
+// GET SINGLE POST
+// ------------------------------
+router.get("/:id", async (req, res) => {
   try {
+    const post = await Post.findById(req.params.id)
+      .populate("author", "username displayName profilePic");
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
+    res.json(post);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// ------------------------------
+// LIKE / UNLIKE POST
+// ------------------------------
+router.put("/:id/like", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ message: "No token provided" });
+
+    const token = authHeader.split(" ")[1];
+    const payload = jwt.verify(token, process.env.JWT_SECRET || "secret");
+
     const post = await Post.findById(req.params.id);
-    if (post.likes.includes(userId)) {
-      post.likes.pull(userId);
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
+    const userId = payload.id;
+    const index = post.likes.indexOf(userId);
+
+    if (index === -1) {
+      post.likes.push(userId); // like
     } else {
-      post.likes.push(userId);
+      post.likes.splice(index, 1); // unlike
     }
+
     await post.save();
     res.json(post);
   } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Add Comment
-router.post('/:id/comment', async (req, res) => {
-  const { userId, content } = req.body;
-  try {
-    const comment = await Comment.create({ post: req.params.id, author: userId, content });
-    res.json(comment);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Get Comments for Post
-router.get('/:id/comments', async (req, res) => {
-  try {
-    const comments = await Comment.find({ post: req.params.id }).populate('author', 'username');
-    res.json(comments);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ message: err.message });
   }
 });
 

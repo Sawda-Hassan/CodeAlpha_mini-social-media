@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comments - Social App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+     Navigation bar with links to other pages 
+    <nav class="navbar">
+        <div class="nav-container">
+            <h2 class="nav-brand">Social App</h2>
+            <div class="nav-links">
+                <a href="posts.html">Posts</a>
+                <a href="profile.html">Profile</a>
+                <a href="#" id="logoutBtn">Logout</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="posts-container">
+             Back button to return to posts feed 
+            <div class="back-button-container">
+                <a href="posts.html" class="back-button">← Back to Posts</a>
+            </div>
+            
+             Main post display card 
+            <div class="card" id="postCard">
+                <div class="loading">Loading post...</div>
+            </div>
+            
+             Comments section 
+            <div class="card">
+                <h3>Comments</h3>
+                
+                 Form to add a new comment 
+                <form id="addCommentForm" class="comment-form-full">
+                    <div class="form-group">
+                        <textarea id="commentContent" name="content" rows="3" placeholder="Write a comment..." required></textarea>
+                    </div>
+                    
+                    <div id="commentError" class="error-message"></div>
+                    
+                    <button type="submit" class="btn btn-primary">Post Comment</button>
+                </form>
+                
+                 List of all comments 
+                <div id="commentsContainer" class="comments-list-full">
+                    <div class="loading">Loading comments...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+     Include main JavaScript file with API functions 
+    <script src="main.js"></script>
+    <script>
+        // Check if user is authenticated before loading page
+        checkAuth();
+        
+        // Get post ID from URL query parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const postId = urlParams.get('postId');
+        
+        // Redirect to posts page if no post ID is provided
+        if (!postId) {
+            window.location.href = 'posts.html';
+        }
+        
+        /**
+         * Load and display the main post
+         */
+        async function loadPost() {
+            const postCard = document.getElementById('postCard');
+            const post = await getPost(postId);
+            
+            if (post) {
+                // Render the post with author info and content
+                postCard.innerHTML = `
+                    <div class="post-header">
+                        <div class="post-avatar">
+                            <span>${post.author?.username?.charAt(0).toUpperCase() || 'U'}</span>
+                        </div>
+                        <div class="post-author-info">
+                            <h4>${post.author?.username || 'Anonymous'}</h4>
+                            <span class="post-date">${formatDate(post.createdAt)}</span>
+                        </div>
+                    </div>
+                    <div class="post-content">
+                        <p>${post.content}</p>
+                    </div>
+                    <div class="post-actions">
+                        <button class="btn-icon">
+                            <span>❤️</span> <span>${post.likes || 0}</span>
+                        </button>
+                        <button class="btn-icon">
+                            <span>💬</span> <span>${post.commentsCount || 0}</span>
+                        </button>
+                    </div>
+                `;
+            } else {
+                // Show error if post not found
+                postCard.innerHTML = '<div class="empty-state">Post not found</div>';
+            }
+        }
+        
+        /**
+         * Load and display all comments for the post
+         */
+        async function loadComments() {
+            const commentsContainer = document.getElementById('commentsContainer');
+            const comments = await getComments(postId);
+            
+            if (comments && comments.length > 0) {
+                // Render each comment with author info and timestamp
+                commentsContainer.innerHTML = comments.map(comment => `
+                    <div class="comment-full">
+                        <div class="comment-avatar">
+                            <span>${comment.author?.username?.charAt(0).toUpperCase() || 'U'}</span>
+                        </div>
+                        <div class="comment-content-full">
+                            <div class="comment-header">
+                                <strong>${comment.author?.username || 'Anonymous'}</strong>
+                                <span class="comment-date">${formatDate(comment.createdAt)}</span>
+                            </div>
+                            <p>${comment.content}</p>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                // Show message if no comments exist
+                commentsContainer.innerHTML = '<div class="empty-state">No comments yet. Be the first to comment!</div>';
+            }
+        }
+        
+        /**
+         * Format date to human-readable relative time
+         * @param {string} dateString - ISO date string
+         * @returns {string} Formatted date string
+         */
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diff = now - date;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+            
+            if (minutes < 1) return 'Just now';
+            if (minutes < 60) return `${minutes}m ago`;
+            if (hours < 24) return `${hours}h ago`;
+            if (days < 7) return `${days}d ago`;
+            return date.toLocaleDateString();
+        }
+        
+        /**
+         * Handle comment form submission
+         */
+        document.getElementById('addCommentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const content = document.getElementById('commentContent').value;
+            const errorDiv = document.getElementById('commentError');
+            
+            // Send comment to API
+            const result = await createComment(postId, content);
+            
+            if (result.success) {
+                // Clear form and reload comments on success
+                document.getElementById('commentContent').value = '';
+                errorDiv.textContent = '';
+                loadComments();
+            } else {
+                // Display error message
+                errorDiv.textContent = result.error;
+            }
+        });
+        
+        /**
+         * Handle logout button click
+         */
+        document.getElementById('logoutBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            logout();
+        });
+        
+        // Load post and comments when page loads
+        loadPost();
+        loadComments();
+    </script>
+</body>
+</html>

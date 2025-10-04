@@ -2,7 +2,6 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const path = require("path");
 const jwt = require("jsonwebtoken");
 
 const authRoutes = require("./routes/auth");
@@ -12,14 +11,16 @@ const followRoutes = require("./routes/follow");
 
 const app = express();
 
+// ------------------
 // Middleware
+// ------------------
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 // CORS - allow your frontend domain or '*' for all (adjust if needed)
 app.use(
   cors({
-    origin: "*", 
+    origin: "*",
     credentials: true,
   })
 );
@@ -52,20 +53,6 @@ app.get("/api/me", (req, res) => {
   } catch (err) {
     return res.status(401).json({ msg: "Invalid token" });
   }
-});
-
-// ------------------
-// Serve Frontend
-// ------------------
-
-// Replace "frontend" with your actual frontend folder name if different
-const frontendPath = path.join(__dirname, "../frontend");
-app.use(express.static(frontendPath));
-
-// SPA fallback for frontend routes
-app.get("*", (req, res) => {
-  if (req.path.startsWith("/api/")) return res.status(404).json({ message: "Not found" });
-  res.sendFile(path.join(frontendPath, "index.html"));
 });
 
 // ------------------

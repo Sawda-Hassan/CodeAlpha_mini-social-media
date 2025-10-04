@@ -8,7 +8,7 @@ const router = express.Router();
 router.post('/:id/follow', async (req, res) => {
   const { userId } = req.body;
   try {
-    let follow = await Follow.findOne({ follower: userId, following: req.params.id });
+    let follow = await Follow.findOne({ follower: userId, followings: req.params.id });
     if (follow) {
       await Follow.deleteOne({ _id: follow._id });
       res.json({ msg: 'Unfollowed' });

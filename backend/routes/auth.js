@@ -1,106 +1,95 @@
-// routes/auth.js
-const express = require('express');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const User = require('../models/users');
-
+const express = require("express");
+const jwt = require("jsonwebtoken");
+const User = require("../models/users");
+const  Post= require( "../models/post.js");
+const Follow = require("../models/follow");
 const router = express.Router();
-const SALT_ROUNDS = 10;
-const JWT_SECRET = process.env.JWT_SECRET || 'secret';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'refresh-secret';
 
-// helper: safe JSON error response
-function jsonError(res, status, message) {
-  return res.status(status).json({ message });
+// Helper: generate JWT
+function generateToken(user) {
+  return jwt.sign(
+    { id: user._id, username: user.username, email: user.email },
+    process.env.JWT_SECRET || "secret",
+    { expiresIn: "1h" }
+  );
 }
 
-// REGISTER
-router.post('/register', async (req, res) => {
+// @route   POST /api/auth/register
+// @desc    Register new user
+router.post("/register", async (req, res) => {
   try {
-    const { username, email, password, displayName } = req.body || {};
-    if (!username || !email || !password) return jsonError(res, 400, 'username, email and password are required');
+    const { username, email, password } = req.body;
 
-    // check existing
-    const exists = await User.findOne({ $or: [{ username }, { email }] });
-    if (exists) return jsonError(res, 400, 'Username or email already exists');
+    // Check if user exists
+    const existing = await User.findOne({ email });
+    if (existing) return res.status(400).json({ error: "Email already registered" });
 
-    const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-    const user = new User({ username, email, password: passwordHash, displayName });
+    const user = new User({ username, email, password });
     await user.save();
 
-    // sign tokens
-    const token = jwt.sign({ id: user._id, username: user.username }, JWT_SECRET, { expiresIn: '1h' });
-    const refreshToken = jwt.sign({ id: user._id }, JWT_REFRESH_SECRET, { expiresIn: '7d' });
-
-    // persist refresh token (optional)
-    user.refreshToken = refreshToken;
-    await user.save();
-
-    return res.status(201).json({
+    const token = generateToken(user);
+    res.status(201).json({
       token,
-      refreshToken,
-      user: { id: user._id, username: user.username, email: user.email, displayName: user.displayName }
+      user: user.toProfileJSON(),
     });
   } catch (err) {
-    console.error('Register error:', err);
-    return jsonError(res, 500, 'Server error during registration');
+    res.status(400).json({ error: err.message });
   }
 });
 
-// LOGIN
-router.post('/login', async (req, res) => {
+// @route   POST /api/auth/login
+// @desc    Login user
+router.post("/login", async (req, res) => {
   try {
-    const { emailOrUsername, password, email } = req.body || {};
-    // support emailOrUsername or email field for compatibility
-    const lookup = emailOrUsername || email;
-    if (!lookup || !password) return jsonError(res, 400, 'emailOrUsername (or email) and password are required');
+    const { email, password } = req.body;
 
-    const user = await User.findOne({ $or: [{ email: lookup }, { username: lookup }] });
-    if (!user) return jsonError(res, 400, 'Invalid credentials');
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ error: "User not found" });
 
-    const ok = await bcrypt.compare(password, user.password);
-    if (!ok) return jsonError(res, 400, 'Invalid credentials');
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) return res.status(400).json({ error: "Invalid credentials" });
 
-    const token = jwt.sign({ id: user._id, username: user.username }, JWT_SECRET, { expiresIn: '1h' });
-    const refreshToken = jwt.sign({ id: user._id }, JWT_REFRESH_SECRET, { expiresIn: '7d' });
+    const token = generateToken(user);
+    res.json({ token, user: user.toProfileJSON() });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
-    // save refresh token
-    user.refreshToken = refreshToken;
-    await user.save();
+// @route   PUT /api/auth/profile/:id
+// @desc    Update user profile// GET /api/auth/profile/:id
+router.get("/profile/:id", async (req, res) => {
+  try {
+    const userId = req.params.id;
 
-    return res.json({
-      token, refreshToken,
-      user: { id: user._id, username: user.username, email: user.email, displayName: user.displayName }
+    // Find the user by ID
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Count posts created by this user
+    const postsCount = await Post.countDocuments({ author: userId });
+
+    // Count followers (users who follow this user)
+    const followersCount = await Follow.countDocuments({ following: userId });
+
+    // Count following (users this user follows)
+    const followingCount = await Follow.countDocuments({ follower: userId });
+
+    // Return full profile info
+    res.json({
+      id: user._id,
+      username: user.username,
+      email: user.email,
+      displayName: user.displayName,
+      bio: user.bio,
+      profilePic: user.profilePic,
+      followersCount,
+      followingCount,
+      postsCount,
     });
   } catch (err) {
-    console.error('Login error:', err);
-    return jsonError(res, 500, 'Server error during login');
+    console.error("Profile fetch error:", err);
+    res.status(500).json({ message: "Error fetching profile" });
   }
 });
-
-// REFRESH
-router.post('/refresh', async (req, res) => {
-  try {
-    const { refreshToken } = req.body || {};
-    if (!refreshToken) return jsonError(res, 400, 'Missing refreshToken');
-
-    let payload;
-    try {
-      payload = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
-    } catch (err) {
-      return jsonError(res, 401, 'Invalid refresh token');
-    }
-
-    const user = await User.findById(payload.id);
-    if (!user) return jsonError(res, 401, 'User not found');
-    if (!user.refreshToken || user.refreshToken !== refreshToken) return jsonError(res, 401, 'Refresh token not recognized');
-
-    const newToken = jwt.sign({ id: user._id, username: user.username }, JWT_SECRET, { expiresIn: '1h' });
-    return res.json({ token: newToken });
-  } catch (err) {
-    console.error('Refresh error:', err);
-    return jsonError(res, 500, 'Server error during token refresh');
-  }
-});
-
 module.exports = router;

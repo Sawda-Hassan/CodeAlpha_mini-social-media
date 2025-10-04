@@ -1,61 +1,222 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini Social Media - Register</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile - Social App</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* --- TikTok-style Follow Button --- */
+    .follow-btn {
+      background-color: #ff2c55;
+      color: #fff;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .follow-btn:hover {
+      background-color: #e0003c;
+      transform: scale(1.05);
+    }
+    .follow-btn.following {
+      background-color: #eee;
+      color: #333;
+      border: 1px solid #ccc;
+    }
+    .follow-btn.following:hover {
+      background-color: #ffefef;
+      color: #ff2c55;
+      border: 1px solid #ff2c55;
+      transform: scale(1.05);
+    }
+  </style>
 </head>
+
 <body>
-    <div class="container">
-        <header class="header">
-            <h1>Mini Social</h1>
-            <nav class="nav">
-                <a href="index.html" class="nav-btn">Home</a>
-                <a href="index.html" class="nav-btn">Login</a>
-            </nav>
-        </header>
-
-        <div class="auth-container">
-            <div class="post-form">
-                <h2>Join Mini Social</h2>
-                <p style="text-align: center; margin-bottom: 1.5rem; color: #666;">Create your account to start sharing</p>
-                
-                <form id="register-form">
-                    <div class="form-group">
-                        <input type="text" id="reg-username" placeholder="Choose a username" required>
-                    </div>
-                    <!-- Added email field to match User schema -->
-                    <div class="form-group">
-                        <input type="email" id="reg-email" placeholder="Enter your email" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="password" id="reg-password" placeholder="Create a password" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="password" id="confirm-password" placeholder="Confirm your password" required>
-                    </div>
-                    <!-- Added bio field (optional) -->
-                    <div class="form-group">
-                        <textarea id="reg-bio" placeholder="Tell us about yourself (optional)" rows="3"></textarea>
-                    </div>
-                    <!-- Added profile picture URL field (optional) -->
-                    <div class="form-group">
-                        <input type="url" id="reg-profilepic" placeholder="Profile picture URL (optional)">
-                    </div>
-                    <button type="submit" class="submit-btn">Create Account</button>
-                </form>
-                
-                <div id="register-message" class="message hidden"></div>
-                
-                <p style="text-align: center; margin-top: 1.5rem;">
-                    Already have an account? <a href="index.html" style="color: #667eea; text-decoration: none;">Login here</a>
-                </p>
-            </div>
-        </div>
+  <nav class="navbar">
+    <div class="nav-container">
+      <h2 class="nav-brand">Social App</h2>
+      <div class="nav-links">
+        <a href="posts.html">Posts</a>
+        <a href="profile.html" class="active">Profile</a>
+        <a href="#" id="logoutBtn">Logout</a>
+      </div>
     </div>
+  </nav>
 
-    <script src="js/auth.js"></script>
-    <script src="js/register.js"></script>
+  <div class="container">
+    <div class="profile-container">
+      <div class="profile-header">
+        <div class="profile-avatar">
+          <span id="avatarInitial">U</span>
+        </div>
+        <div class="profile-info">
+          <h2 id="profileUsername">Loading...</h2>
+          <p id="profileEmail">Loading...</p>
+        </div>
+        <button id="followBtn" class="follow-btn" style="display:none;">Follow</button>
+      </div>
+
+      <div class="profile-stats">
+        <div class="stat">
+          <span class="stat-value" id="postsCount">0</span>
+          <span class="stat-label">Posts</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="followersCount">0</span>
+          <span class="stat-label">Followers</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="followingCount">0</span>
+          <span class="stat-label">Following</span>
+        </div>
+      </div>
+
+      <div class="profile-bio">
+        <h3>Bio</h3>
+        <p id="profileBio">No bio yet</p>
+      </div>
+
+      <div class="card" id="updateCard">
+        <h3>Update Profile</h3>
+        <form id="updateProfileForm" class="auth-form">
+          <div class="form-group">
+            <label for="updateUsername">Username</label>
+            <input type="text" id="updateUsername" name="username" placeholder="Username" />
+          </div>
+          <div class="form-group">
+            <label for="updateBio">Bio</label>
+            <textarea id="updateBio" name="bio" rows="3" placeholder="Update your bio"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="updatePassword">New Password (Optional)</label>
+            <input type="password" id="updatePassword" name="password" placeholder="Leave blank to keep current" />
+          </div>
+          <div id="updateError" class="error-message"></div>
+          <div id="updateSuccess" class="success-message"></div>
+          <button type="submit" class="btn btn-primary">Update Profile</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+  <script>
+    checkAuth();
+
+    async function loadProfile() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const profileId = urlParams.get('id');
+      const currentUser = getUserFromToken();
+
+      let profile;
+
+      if (profileId && profileId !== currentUser.id) {
+        // View someone else's profile
+        profile = await getUserById(profileId);
+        document.getElementById('updateCard').style.display = 'none';
+      } else {
+        // View own profile
+        profile = await getProfile();
+        document.getElementById('updateCard').style.display = 'block';
+      }
+
+      if (!profile) return;
+
+      // Update profile info
+      document.getElementById('profileUsername').textContent = profile.username;
+      document.getElementById('profileEmail').textContent = profile.email;
+      document.getElementById('profileBio').textContent = profile.bio || 'No bio yet';
+      document.getElementById('avatarInitial').textContent = profile.username.charAt(0).toUpperCase();
+      document.getElementById('postsCount').textContent = profile.postsCount || 0;
+      document.getElementById('followersCount').textContent = profile.followersCount || 0;
+      document.getElementById('followingCount').textContent = profile.followingCount || 0;
+
+      if (profileId && profileId !== currentUser.id) {
+        await setupFollowButton(profile._id || profile.id);
+      } else {
+        document.getElementById('followBtn').style.display = 'none';
+      }
+    }
+
+    async function setupFollowButton(profileId) {
+      const followBtn = document.getElementById('followBtn');
+      const currentUser = getUserFromToken();
+      followBtn.style.display = 'inline-block';
+      followBtn.disabled = true;
+
+      let followers = await getFollowers(profileId);
+      let isFollowing = followers.some(f => f._id === currentUser.id);
+
+      updateFollowBtnUI(isFollowing);
+      followBtn.disabled = false;
+
+      followBtn.onclick = async () => {
+        followBtn.disabled = true;
+
+        if (isFollowing) {
+          const result = await unfollowUser(profileId);
+          if (result.success) isFollowing = false;
+        } else {
+          const result = await followUser(profileId);
+          if (result.success) isFollowing = true;
+        }
+
+        updateFollowBtnUI(isFollowing);
+
+        const updatedFollowers = await getFollowers(profileId);
+        document.getElementById('followersCount').textContent = updatedFollowers.length;
+
+        followBtn.disabled = false;
+      };
+    }
+
+    function updateFollowBtnUI(isFollowing) {
+      const btn = document.getElementById('followBtn');
+      if (isFollowing) {
+        btn.textContent = 'Following ✓';
+        btn.classList.add('following');
+      } else {
+        btn.textContent = 'Follow';
+        btn.classList.remove('following');
+      }
+    }
+
+    async function getUserById(userId) {
+      const res = await fetch(`/api/users/${userId}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (!res.ok) return null;
+      return res.json();
+    }
+
+    document.getElementById('updateProfileForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('updateUsername').value;
+      const bio = document.getElementById('updateBio').value;
+      const password = document.getElementById('updatePassword').value;
+
+      const result = await updateProfile(username, bio, password);
+      if (result.success) {
+        document.getElementById('updateSuccess').textContent = 'Profile updated successfully!';
+        document.getElementById('updateError').textContent = '';
+        loadProfile();
+      } else {
+        document.getElementById('updateError').textContent = result.error;
+        document.getElementById('updateSuccess').textContent = '';
+      }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      logout();
+    });
+
+    loadProfile();
+  </script>
 </body>
 </html>

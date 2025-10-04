@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Posts - Social App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h2 class="nav-brand">Social App</h2>
+            <div class="nav-links">
+                <a href="posts.html" class="active">Posts</a>
+                <a href="profile.html">Profile</a>
+                <a href="#" id="logoutBtn">Logout</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="posts-container">
+            <div class="card create-post-card">
+                <h3>Create a Post</h3>
+                <form id="createPostForm">
+                    <div class="form-group">
+                        <textarea id="postContent" name="content" rows="4" placeholder="What's on your mind?" required></textarea>
+                    </div>
+                    
+                    <div id="postError" class="error-message"></div>
+                    
+                    <button type="submit" class="btn btn-primary">Post</button>
+                </form>
+            </div>
+            
+            <div class="posts-feed">
+                <h3>Recent Posts</h3>
+                <div id="postsContainer">
+                    <div class="loading">Loading posts...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="main.js"></script>
+    <script>
+        checkAuth();
+        
+        async function loadPosts() {
+            const postsContainer = document.getElementById('postsContainer');
+            const posts = await getPosts();
+            
+            if (posts && posts.length > 0) {
+                postsContainer.innerHTML = posts.map(post => `
+                    <div class="post-card">
+                        <div class="post-header">
+                            <div class="post-avatar">
+                                <span>${post.author?.username?.charAt(0).toUpperCase() || 'U'}</span>
+                            </div>
+                            <div class="post-author-info">
+                                <h4>${post.author?.username || 'Anonymous'}</h4>
+                                <span class="post-date">${formatDate(post.createdAt)}</span>
+                            </div>
+                        </div>
+                        <div class="post-content">
+                            <p>${post.content}</p>
+                        </div>
+                        <div class="post-actions">
+                            <button class="btn-icon" onclick="likePost('${post._id}')">
+                                <span>❤️</span> <span>${post.likes || 0}</span>
+                            </button>
+                            <button class="btn-icon" onclick="toggleComments('${post._id}')">
+                                <span>💬</span> <span>${post.commentsCount || 0}</span>
+                            </button>
+                        </div>
+                        <div id="comments-${post._id}" class="comments-section" style="display: none;">
+                            <div class="comments-list" id="comments-list-${post._id}">
+                                <div class="loading">Loading comments...</div>
+                            </div>
+                            <form class="comment-form" onsubmit="addComment(event, '${post._id}')">
+                                <input type="text" placeholder="Add a comment..." required>
+                                <button type="submit" class="btn btn-sm">Send</button>
+                            </form>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                postsContainer.innerHTML = '<div class="empty-state">No posts yet. Be the first to post!</div>';
+            }
+        }
+        
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diff = now - date;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+            
+            if (minutes < 1) return 'Just now';
+            if (minutes < 60) return `${minutes}m ago`;
+            if (hours < 24) return `${hours}h ago`;
+            if (days < 7) return `${days}d ago`;
+            return date.toLocaleDateString();
+        }
+        
+        async function toggleComments(postId) {
+            const commentsSection = document.getElementById(`comments-${postId}`);
+            const commentsList = document.getElementById(`comments-list-${postId}`);
+            
+            if (commentsSection.style.display === 'none') {
+                commentsSection.style.display = 'block';
+                const comments = await getComments(postId);
+                
+                if (comments && comments.length > 0) {
+                    commentsList.innerHTML = comments.map(comment => `
+                        <div class="comment">
+                            <div class="comment-avatar">
+                                <span>${comment.author?.username?.charAt(0).toUpperCase() || 'U'}</span>
+                            </div>
+                            <div class="comment-content">
+                                <strong>${comment.author?.username || 'Anonymous'}</strong>
+                                <p>${comment.content}</p>
+                                <span class="comment-date">${formatDate(comment.createdAt)}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    commentsList.innerHTML = '<div class="empty-state">No comments yet</div>';
+                }
+            } else {
+                commentsSection.style.display = 'none';
+            }
+        }
+        
+        async function addComment(event, postId) {
+            event.preventDefault();
+            const input = event.target.querySelector('input');
+            const content = input.value;
+            
+            const result = await createComment(postId, content);
+            if (result.success) {
+                input.value = '';
+                toggleComments(postId);
+                setTimeout(() => toggleComments(postId), 100);
+            }
+        }
+        
+        async function likePost(postId) {
+            // Implement like functionality
+            console.log('Like post:', postId);
+        }
+        
+        document.getElementById('createPostForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const content = document.getElementById('postContent').value;
+            
+            const result = await createPost(content);
+            if (result.success) {
+                document.getElementById('postContent').value = '';
+                document.getElementById('postError').textContent = '';
+                loadPosts();
+            } else {
+                document.getElementById('postError').textContent = result.error;
+            }
+        });
+        
+        document.getElementById('logoutBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            logout();
+        });
+        
+        loadPosts();
+    </script>
+</body>
+</html>

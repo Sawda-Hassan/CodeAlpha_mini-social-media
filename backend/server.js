@@ -16,14 +16,15 @@ const app = express();
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true }));
 
+// CORS - allow your frontend domain or '*' for all (adjust if needed)
 app.use(
   cors({
-    origin: "http://127.0.0.1:5500", // frontend URL
+    origin: "*", 
     credentials: true,
   })
 );
 
-// Logger
+// Logger (development only)
 app.use((req, res, next) => {
   if (process.env.NODE_ENV !== "production") {
     console.log(`${req.method} ${req.path}`);
@@ -31,16 +32,15 @@ app.use((req, res, next) => {
   next();
 });
 
-// Static frontend
-app.use(express.static(path.join(__dirname, "public")));
-
-// Routes
+// ------------------
+// Backend API Routes
+// ------------------
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes); // optional
 app.use("/api/comments", commentRoutes);
 app.use("/api/follow", followRoutes);
 
-// /api/me helper
+// Helper route for user info
 app.get("/api/me", (req, res) => {
   const auth = req.headers.authorization;
   if (!auth) return res.status(401).json({ msg: "No token" });
@@ -54,20 +54,23 @@ app.get("/api/me", (req, res) => {
   }
 });
 
-// SPA fallback
-app.use((req, res, next) => {
-  if (req.path.startsWith("/api/")) return next();
-  if (path.extname(req.path)) return next();
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
+// ------------------
+// Serve Frontend
+// ------------------
 
-// 404 for API
-app.use((req, res, next) => {
+// Replace "frontend" with your actual frontend folder name if different
+const frontendPath = path.join(__dirname, "../frontend");
+app.use(express.static(frontendPath));
+
+// SPA fallback for frontend routes
+app.get("*", (req, res) => {
   if (req.path.startsWith("/api/")) return res.status(404).json({ message: "Not found" });
-  next();
+  res.sendFile(path.join(frontendPath, "index.html"));
 });
 
-// Error handler
+// ------------------
+// Error Handler
+// ------------------
 app.use((err, req, res, next) => {
   console.error(err.stack || err);
   const status = err.status || 500;
@@ -77,6 +80,9 @@ app.use((err, req, res, next) => {
   });
 });
 
+// ------------------
+// Start Server
+// ------------------
 const PORT = process.env.PORT || 4000;
 
 async function start() {

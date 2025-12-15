@@ -5,45 +5,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Profile - Social App</title>
   <link rel="stylesheet" href="styles.css" />
-  <style>
-    /* --- TikTok-style Follow Button --- */
-    .follow-btn {
-      background-color: #ff2c55;
-      color: #fff;
-      border: none;
-      padding: 10px 22px;
-      border-radius: 25px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.25s ease;
-    }
-    .follow-btn:hover {
-      background-color: #e0003c;
-      transform: scale(1.05);
-    }
-    .follow-btn.following {
-      background-color: #eee;
-      color: #333;
-      border: 1px solid #ccc;
-    }
-    .follow-btn.following:hover {
-      background-color: #ffefef;
-      color: #ff2c55;
-      border: 1px solid #ff2c55;
-      transform: scale(1.05);
-    }
-  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 
 <body>
   <nav class="navbar">
     <div class="nav-container">
-      <h2 class="nav-brand">Social App</h2>
+      <div class="nav-brand">
+        <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="20" fill="url(#gradient)"/>
+          <path d="M20 10L25 20L20 30L15 20L20 10Z" fill="white"/>
+          <defs>
+            <linearGradient id="gradient" x1="0" y1="0" x2="40" y2="40">
+              <stop offset="0%" stop-color="#6366f1"/>
+              <stop offset="100%" stop-color="#8b5cf6"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span>Social</span>
+      </div>
       <div class="nav-links">
-        <a href="posts.html">Posts</a>
-        <a href="profile.html" class="active">Profile</a>
-        <a href="#" id="logoutBtn">Logout</a>
+        <a href="posts.html">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+          <span>Home</span>
+        </a>
+        <a href="profile.html" class="active">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
+          <span>Profile</span>
+        </a>
+        <a href="#" id="logoutBtn">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+          </svg>
+          <span>Logout</span>
+        </a>
       </div>
     </div>
   </nav>
@@ -51,14 +52,19 @@
   <div class="container">
     <div class="profile-container">
       <div class="profile-header">
-        <div class="profile-avatar">
-          <span id="avatarInitial">U</span>
+        <div class="profile-cover"></div>
+        <div class="profile-info-wrapper">
+          <div class="profile-avatar-large">
+            <span id="avatarInitial">U</span>
+          </div>
+          <div class="profile-info">
+            <div class="profile-name-section">
+              <h2 id="profileUsername">Loading...</h2>
+              <button id="followBtn" class="follow-btn" style="display:none;">Follow</button>
+            </div>
+            <p id="profileEmail">Loading...</p>
+          </div>
         </div>
-        <div class="profile-info">
-          <h2 id="profileUsername">Loading...</h2>
-          <p id="profileEmail">Loading...</p>
-        </div>
-        <button id="followBtn" class="follow-btn" style="display:none;">Follow</button>
       </div>
 
       <div class="profile-stats">
@@ -77,12 +83,12 @@
       </div>
 
       <div class="profile-bio">
-        <h3>Bio</h3>
+        <h3>About</h3>
         <p id="profileBio">No bio yet</p>
       </div>
 
       <div class="card" id="updateCard">
-        <h3>Update Profile</h3>
+        <h3>Edit Profile</h3>
         <form id="updateProfileForm" class="auth-form">
           <div class="form-group">
             <label for="updateUsername">Username</label>
@@ -90,10 +96,10 @@
           </div>
           <div class="form-group">
             <label for="updateBio">Bio</label>
-            <textarea id="updateBio" name="bio" rows="3" placeholder="Update your bio"></textarea>
+            <textarea id="updateBio" name="bio" rows="3" placeholder="Tell us about yourself..."></textarea>
           </div>
           <div class="form-group">
-            <label for="updatePassword">New Password (Optional)</label>
+            <label for="updatePassword">New Password</label>
             <input type="password" id="updatePassword" name="password" placeholder="Leave blank to keep current" />
           </div>
           <div id="updateError" class="error-message"></div>
@@ -116,18 +122,15 @@
       let profile;
 
       if (profileId && profileId !== currentUser.id) {
-        // View someone else's profile
         profile = await getUserById(profileId);
         document.getElementById('updateCard').style.display = 'none';
       } else {
-        // View own profile
         profile = await getProfile();
         document.getElementById('updateCard').style.display = 'block';
       }
 
       if (!profile) return;
 
-      // Update profile info
       document.getElementById('profileUsername').textContent = profile.username;
       document.getElementById('profileEmail').textContent = profile.email;
       document.getElementById('profileBio').textContent = profile.bio || 'No bio yet';
@@ -146,7 +149,7 @@
     async function setupFollowButton(profileId) {
       const followBtn = document.getElementById('followBtn');
       const currentUser = getUserFromToken();
-      followBtn.style.display = 'inline-block';
+      followBtn.style.display = 'inline-flex';
       followBtn.disabled = true;
 
       let followers = await getFollowers(profileId);
@@ -178,10 +181,10 @@
     function updateFollowBtnUI(isFollowing) {
       const btn = document.getElementById('followBtn');
       if (isFollowing) {
-        btn.textContent = 'Following ✓';
+        btn.innerHTML = '<svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>Following</span>';
         btn.classList.add('following');
       } else {
-        btn.textContent = 'Follow';
+        btn.innerHTML = '<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg><span>Follow</span>';
         btn.classList.remove('following');
       }
     }

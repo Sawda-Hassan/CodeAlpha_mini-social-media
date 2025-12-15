@@ -5,15 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Posts - Social App</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <h2 class="nav-brand">Social App</h2>
+            <div class="nav-brand">
+                <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
+                    <circle cx="20" cy="20" r="20" fill="url(#gradient)"/>
+                    <path d="M20 10L25 20L20 30L15 20L20 10Z" fill="white"/>
+                    <defs>
+                        <linearGradient id="gradient" x1="0" y1="0" x2="40" y2="40">
+                            <stop offset="0%" stop-color="#6366f1"/>
+                            <stop offset="100%" stop-color="#8b5cf6"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span>Social</span>
+            </div>
             <div class="nav-links">
-                <a href="posts.html" class="active">Posts</a>
-                <a href="profile.html">Profile</a>
-                <a href="#" id="logoutBtn">Logout</a>
+                <a href="posts.html" class="active">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                    <span>Home</span>
+                </a>
+                <a href="profile.html">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                    <span>Profile</span>
+                </a>
+                <a href="#" id="logoutBtn">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                    </svg>
+                    <span>Logout</span>
+                </a>
             </div>
         </div>
     </nav>
@@ -21,7 +51,7 @@
     <div class="container">
         <div class="posts-container">
             <div class="card create-post-card">
-                <h3>Create a Post</h3>
+                <h3>Share something</h3>
                 <form id="createPostForm">
                     <div class="form-group">
                         <textarea id="postContent" name="content" rows="4" placeholder="What's on your mind?" required></textarea>
@@ -29,12 +59,11 @@
                     
                     <div id="postError" class="error-message"></div>
                     
-                    <button type="submit" class="btn btn-primary">Post</button>
+                    <button type="submit" class="btn btn-primary">Publish Post</button>
                 </form>
             </div>
             
             <div class="posts-feed">
-                <h3>Recent Posts</h3>
                 <div id="postsContainer">
                     <div class="loading">Loading posts...</div>
                 </div>
@@ -67,10 +96,16 @@
                         </div>
                         <div class="post-actions">
                             <button class="btn-icon" onclick="likePost('${post._id}')">
-                                <span>❤️</span> <span>${post.likes || 0}</span>
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                                <span>${post.likes || 0}</span>
                             </button>
                             <button class="btn-icon" onclick="toggleComments('${post._id}')">
-                                <span>💬</span> <span>${post.commentsCount || 0}</span>
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                                </svg>
+                                <span>${post.commentsCount || 0}</span>
                             </button>
                         </div>
                         <div id="comments-${post._id}" class="comments-section" style="display: none;">
@@ -78,14 +113,14 @@
                                 <div class="loading">Loading comments...</div>
                             </div>
                             <form class="comment-form" onsubmit="addComment(event, '${post._id}')">
-                                <input type="text" placeholder="Add a comment..." required>
-                                <button type="submit" class="btn btn-sm">Send</button>
+                                <input type="text" placeholder="Write a comment..." required>
+                                <button type="submit" class="btn btn-sm">Post</button>
                             </form>
                         </div>
                     </div>
                 `).join('');
             } else {
-                postsContainer.innerHTML = '<div class="empty-state">No posts yet. Be the first to post!</div>';
+                postsContainer.innerHTML = '<div class="empty-state"><svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg><p>No posts yet</p><span>Be the first to share something!</span></div>';
             }
         }
         
@@ -126,7 +161,7 @@
                         </div>
                     `).join('');
                 } else {
-                    commentsList.innerHTML = '<div class="empty-state">No comments yet</div>';
+                    commentsList.innerHTML = '<div class="empty-state-small">No comments yet</div>';
                 }
             } else {
                 commentsSection.style.display = 'none';
@@ -147,7 +182,6 @@
         }
         
         async function likePost(postId) {
-            // Implement like functionality
             console.log('Like post:', postId);
         }
         

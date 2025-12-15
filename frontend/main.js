@@ -1,7 +1,7 @@
 // ------------------------------
 // CONFIGURATION
 // ------------------------------
-const API_BASE_URL = "http://localhost:4000/api"; // Change if your backend port is different
+const API_BASE_URL = "http://localhost:4000/api";
 
 // ------------------------------
 // TOKEN MANAGEMENT
@@ -21,7 +21,6 @@ function removeToken() {
 function getUserFromToken() {
   const token = getToken();
   if (!token) return null;
-
   try {
     const payload = JSON.parse(atob(token.split(".")[1]));
     return payload;
@@ -49,7 +48,6 @@ function checkAuth() {
 async function apiRequest(endpoint, method = "GET", body = null) {
   const token = getToken();
   const headers = { "Content-Type": "application/json" };
-
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
   const config = { method, headers };
@@ -57,10 +55,21 @@ async function apiRequest(endpoint, method = "GET", body = null) {
 
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-    const data = await response.json();
-    if (!response.ok) {
-      return { success: false, error: data.message || "An error occurred" };
+
+    // Try to parse JSON, fallback to text
+    let data;
+    const text = await response.text();
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = { error: text || "Unknown error" };
     }
+
+    // If response is not OK, pick error from backend
+    if (!response.ok) {
+      return { success: false, error: data.error || data.message || "An error occurred" };
+    }
+
     return { success: true, data };
   } catch (error) {
     console.error("API Error:", error);
@@ -94,7 +103,6 @@ function logout() {
 async function getProfile() {
   const user = getUserFromToken();
   if (!user) return null;
-
   const result = await apiRequest(`/auth/profile/${user.id}`, "GET");
   return result.success ? result.data : null;
 }
